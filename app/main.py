@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
-import uuid
+
 from .websocket_manager import ConnectionManager
 
 app = FastAPI()
@@ -21,11 +21,11 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             data = await websocket.receive_json()
             await manager.broadcast({
                 "type": "position",
-                "data": data
-            })
+                "data": {**data, "clientId": client_id}
+            }, client_id)
     except WebSocketDisconnect:
         manager.disconnect(client_id)
         await manager.broadcast({
             "type": "client_disconnected",
             "client_id": client_id
-        }) 
+        }, client_id) 
